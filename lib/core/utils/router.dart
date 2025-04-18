@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:user_management/features/profile/screens/profile_screen.dart';
+import 'package:user_management/features/settings/screens/settings_screen.dart';
 
 
 import '../../features/dashboard/screens/dashboard_screen.dart';
@@ -28,7 +30,7 @@ class AppRouter {
       );
 
       // If the user is not logged in, redirect to the sign-in page
-      if (!isLoggedIn &&
+      if (isLoggedIn &&
           state.uri.path != '/sign-in' &&
           state.uri.path != '/sign-up') {
         debugPrint('Redirecting to /sign-in');
@@ -65,6 +67,16 @@ class AppRouter {
             path: '/dashboard',
             name: 'dashboard',
             builder: (context, state) => const DashboardScreen(),
+          ),
+           GoRoute(
+            path: '/profile',
+            name: 'profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: '/settings',
+            name: 'settings',
+            builder: (context, state) => const SettingsScreen(),
           ),
         ],
       ),
