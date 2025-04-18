@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:user_management/features/auth/screens/sign_in_screen.dart';
-import 'package:user_management/features/auth/screens/sign_up_screen.dart';
-import 'package:user_management/features/profile/screens/profile_screen.dart';
-import 'package:user_management/features/settings/screens/settings_screen.dart';
-
-
+import '../../features/auth/screens/sign_in_screen.dart';
+import '../../features/auth/screens/sign_up_screen.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
-
+import '../../features/profile/screens/profile_screen.dart';
+import '../../features/settings/screens/settings_screen.dart';
 import '../services/auth_provider.dart';
 import '../services/service_locator.dart';
 import '../theme/theme_provider.dart';
@@ -32,7 +29,7 @@ class AppRouter {
       );
 
       // If the user is not logged in, redirect to the sign-in page
-      if (isLoggedIn &&
+      if (!isLoggedIn &&
           state.uri.path != '/sign-in' &&
           state.uri.path != '/sign-up') {
         debugPrint('Redirecting to /sign-in');
@@ -55,17 +52,16 @@ class AppRouter {
     refreshListenable: locator<AuthProvider>(),
     routes: [
       // Auth routes
-    GoRoute(
-      path: '/sign-in',
-      name: 'sign-in',
-      builder: (context, state) => const SignInScreen(),
-    ),
-    GoRoute(
-      path: '/sign-up',
-      name: 'sign-up',
-      builder: (context, state) => const SignUpScreen(),
-    ),
-
+      GoRoute(
+        path: '/sign-in',
+        name: 'sign-in',
+        builder: (context, state) => const SignInScreen(),
+      ),
+      GoRoute(
+        path: '/sign-up',
+        name: 'sign-up',
+        builder: (context, state) => const SignUpScreen(),
+      ),
 
       // App routes
       ShellRoute(
@@ -80,7 +76,7 @@ class AppRouter {
             name: 'dashboard',
             builder: (context, state) => const DashboardScreen(),
           ),
-           GoRoute(
+          GoRoute(
             path: '/profile',
             name: 'profile',
             builder: (context, state) => const ProfileScreen(),
