@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../core/models/user_model.dart';
 import '../../../core/services/auth_provider.dart';
+import '../../../core/utils/lottie_animations.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/success_dialog.dart';
 import '../../settings/screens/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -99,10 +102,10 @@ class _ProfileScreenState extends State<ProfileScreen>
           });
 
           if (success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile picture updated successfully'),
-              ),
+            // Show success dialog with animation
+            SuccessDialog.show(
+              context,
+              message: 'Profile picture updated successfully',
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -150,12 +153,16 @@ class _ProfileScreenState extends State<ProfileScreen>
       ).updateProfile(_nameController.text, _emailController.text);
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
+        // Show success dialog with animation
+        SuccessDialog.show(
+          context,
+          message: 'Profile updated successfully',
+          onDismissed: () {
+            setState(() {
+              _isEditing = false;
+            });
+          },
         );
-        setState(() {
-          _isEditing = false;
-        });
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to update profile')),
@@ -259,21 +266,49 @@ class _ProfileScreenState extends State<ProfileScreen>
         Center(
           child: Stack(
             children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.grey[200],
-                backgroundImage:
-                    user.avatar != null ? NetworkImage(user.avatar!) : null,
-                child:
-                    user.avatar == null
-                        ? Text(
-                          user.name[0].toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey[200],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child:
+                      user.avatar != null
+                          ? Image.network(
+                            user.avatar!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Text(
+                                user.name[0].toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: LottieAnimations.getLoadingAnimation(
+                                  width: 60,
+                                  height: 60,
+                                ),
+                              );
+                            },
+                          )
+                          : Center(
+                            child: Text(
+                              user.name[0].toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        )
-                        : null,
+                ),
               ),
               Positioned(
                 bottom: 0,
@@ -283,12 +318,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                   radius: 18,
                   child:
                       _isLoading
-                          ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                          ? SizedBox(
+                            width: 36,
+                            height: 36,
+                            child: LottieAnimations.getLoadingAnimation(
+                              width: 24,
+                              height: 24,
                             ),
                           )
                           : IconButton(
@@ -352,28 +387,59 @@ class _ProfileScreenState extends State<ProfileScreen>
           Center(
             child: Stack(
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage:
-                      Provider.of<AuthProvider>(context).user?.avatar != null
-                          ? NetworkImage(
-                            Provider.of<AuthProvider>(context).user!.avatar!,
-                          )
-                          : null,
-                  child:
-                      Provider.of<AuthProvider>(context).user?.avatar == null
-                          ? Text(
-                            Provider.of<AuthProvider>(
-                                  context,
-                                ).user?.name[0].toUpperCase() ??
-                                '',
-                            style: const TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.grey[200],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child:
+                        Provider.of<AuthProvider>(context).user?.avatar != null
+                            ? Image.network(
+                              Provider.of<AuthProvider>(context).user!.avatar!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Text(
+                                  Provider.of<AuthProvider>(
+                                        context,
+                                      ).user?.name[0].toUpperCase() ??
+                                      '',
+                                  style: const TextStyle(
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
+                              loadingBuilder: (
+                                context,
+                                child,
+                                loadingProgress,
+                              ) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: LottieAnimations.getLoadingAnimation(
+                                    width: 60,
+                                    height: 60,
+                                  ),
+                                );
+                              },
+                            )
+                            : Center(
+                              child: Text(
+                                Provider.of<AuthProvider>(
+                                      context,
+                                    ).user?.name[0].toUpperCase() ??
+                                    '',
+                                style: const TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          )
-                          : null,
+                  ),
                 ),
                 Positioned(
                   bottom: 0,
@@ -383,12 +449,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                     radius: 18,
                     child:
                         _isLoading
-                            ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                            ? SizedBox(
+                              width: 36,
+                              height: 36,
+                              child: LottieAnimations.getLoadingAnimation(
+                                width: 24,
+                                height: 24,
                               ),
                             )
                             : IconButton(
