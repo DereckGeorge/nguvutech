@@ -28,7 +28,7 @@ class AppRouter {
       );
 
       // If the user is not logged in, redirect to the sign-in page
-      if (!isLoggedIn &&
+      if (isLoggedIn &&
           state.uri.path != '/sign-in' &&
           state.uri.path != '/sign-up') {
         debugPrint('Redirecting to /sign-in');
