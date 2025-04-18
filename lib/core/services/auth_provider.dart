@@ -210,6 +210,36 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // Update user avatar
+  Future<bool> updateAvatar(String imagePath) async {
+    if (_user == null) return false;
+
+    _setLoading(true);
+    try {
+      // In a real app, you would upload the image to a server and get back a URL
+      // For this demo, we'll simulate the process by generating a new avatar URL
+
+      // Simulate network delay
+      await Future.delayed(const Duration(seconds: 1));
+
+      // Create a new URL for UI-Avatars with random background to simulate change
+      final newAvatarUrl =
+          'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_user!.name)}&background=random&size=200';
+
+      final updatedUser = _user!.copyWith(avatar: newAvatarUrl);
+      final user = _dataService.updateUser(updatedUser);
+      _user = user;
+      notifyListeners();
+
+      return true;
+    } catch (e) {
+      debugPrint('Update avatar error: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   // Change password
   Future<bool> changePassword(
     String currentPassword,

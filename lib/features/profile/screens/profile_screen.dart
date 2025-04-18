@@ -50,22 +50,76 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Future<void> _pickImage() async {
-    // This is a mock implementation - in a real app you would handle image picking
     try {
-      // final ImagePicker picker = ImagePicker();
-      // final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      // if (image != null) {
-      //   // Handle image selection
-      // }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Image upload functionality is mocked for demo'),
-        ),
+      final ImagePicker picker = ImagePicker();
+
+      // Show a bottom sheet with options
+      final source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (BuildContext context) {
+          return SafeArea(
+            child: Wrap(
+              children: <Widget>[
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Photo Library'),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: const Text('Camera'),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+              ],
+            ),
+          );
+        },
       );
+
+      // User canceled the selection
+      if (source == null) return;
+
+      // Pick the image
+      final XFile? image = await picker.pickImage(source: source);
+
+      if (image != null) {
+        setState(() {
+          _isLoading = true;
+        });
+
+        // Upload the image
+        final success = await Provider.of<AuthProvider>(
+          context,
+          listen: false,
+        ).updateAvatar(image.path);
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Profile picture updated successfully'),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Failed to update profile picture')),
+            );
+          }
+        }
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error selecting image: $e')));
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error selecting image: $e')));
+      }
     }
   }
 
@@ -227,14 +281,24 @@ class _ProfileScreenState extends State<ProfileScreen>
                 child: CircleAvatar(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   radius: 18,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.camera_alt,
-                      size: 18,
-                      color: Colors.white,
-                    ),
-                    onPressed: _pickImage,
-                  ),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : IconButton(
+                            icon: const Icon(
+                              Icons.camera_alt,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                            onPressed: _pickImage,
+                          ),
                 ),
               ),
             ],
@@ -317,14 +381,24 @@ class _ProfileScreenState extends State<ProfileScreen>
                   child: CircleAvatar(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     radius: 18,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.camera_alt,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                      onPressed: _pickImage,
-                    ),
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : IconButton(
+                              icon: const Icon(
+                                Icons.camera_alt,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                              onPressed: _pickImage,
+                            ),
                   ),
                 ),
               ],
