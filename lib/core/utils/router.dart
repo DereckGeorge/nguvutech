@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:user_management/features/auth/screens/sign_in_screen.dart';
+import 'package:user_management/features/auth/screens/sign_up_screen.dart';
 import 'package:user_management/features/profile/screens/profile_screen.dart';
 import 'package:user_management/features/settings/screens/settings_screen.dart';
 
@@ -53,7 +55,17 @@ class AppRouter {
     refreshListenable: locator<AuthProvider>(),
     routes: [
       // Auth routes
-    
+    GoRoute(
+      path: '/sign-in',
+      name: 'sign-in',
+      builder: (context, state) => const SignInScreen(),
+    ),
+    GoRoute(
+      path: '/sign-up',
+      name: 'sign-up',
+      builder: (context, state) => const SignUpScreen(),
+    ),
+
 
       // App routes
       ShellRoute(
