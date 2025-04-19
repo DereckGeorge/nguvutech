@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../core/models/user_model.dart';
 import '../../../core/services/auth_provider.dart';
-import '../../../core/utils/lottie_animations.dart';
-import '../../../core/widgets/success_dialog.dart';
+import '../../../core/utils/system_ui_helper.dart';
 import '../widgets/index.dart';
+import '../services/index.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({Key? key}) : super(key: key);
@@ -34,14 +32,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   void initState() {
     super.initState();
     _loadUserData();
+  }
 
-    // Set status bar to light (dark icons) for light theme
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-    );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Update system UI overlay based on current theme
+    SystemUIHelper.updateSystemUIOverlay(context);
   }
 
   @override
@@ -71,75 +68,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   Future<void> _pickImage() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      final ImagePicker picker = ImagePicker();
+      final imagePath = await ImagePickerService.pickImage(context);
 
-      // Show a bottom sheet with options
-      final source = await showModalBottomSheet<ImageSource>(
-        context: context,
-        builder: (BuildContext context) {
-          return SafeArea(
-            child: Wrap(
-              children: <Widget>[
-                ListTile(
-                  leading: const Icon(Icons.photo_library),
-                  title: const Text('Photo Library'),
-                  onTap: () => Navigator.pop(context, ImageSource.gallery),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.photo_camera),
-                  title: const Text('Camera'),
-                  onTap: () => Navigator.pop(context, ImageSource.camera),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-
-      // User canceled the selection
-      if (source == null) return;
-
-      // Pick the image
-      final XFile? image = await picker.pickImage(source: source);
-
-      if (image != null) {
-        setState(() {
-          _isLoading = true;
-        });
-
-        // Upload the image
-        final success = await Provider.of<AuthProvider>(
-          context,
-          listen: false,
-        ).updateAvatar(image.path);
-
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-
-          if (success) {
-            // Show success dialog with animation
-            SuccessDialog.show(
-              context,
-              message: 'Profile picture updated successfully',
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Failed to update profile picture')),
-            );
-          }
-        }
+      if (imagePath != null) {
+        await ProfileService.updateAvatar(context, imagePath: imagePath);
       }
-    } catch (e) {
+    } finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error selecting image: $e')));
       }
     }
   }
@@ -152,31 +95,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     });
 
     try {
-      final success = await Provider.of<AuthProvider>(
+      await ProfileService.updateProfile(
         context,
-        listen: false,
-      ).updateProfile(_fullNameController.text, _emailController.text);
-
-      if (success && mounted) {
-        // Show success dialog with animation
-        SuccessDialog.show(
-          context,
-          message: 'Profile updated successfully',
-          onDismissed: () {
+        name: _fullNameController.text,
+        email: _emailController.text,
+        onSuccess: () {
+          if (mounted) {
             context.pop(); // Go back to profile page
-          },
-        );
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update profile')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
+          }
+        },
+      );
     } finally {
       if (mounted) {
         setState(() {
