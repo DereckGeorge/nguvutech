@@ -15,6 +15,7 @@ class ProfilePhoneField extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
         isDarkMode ? Colors.grey[850] : const Color(0xFFF5F5F8);
+    final borderColor = isDarkMode ? Colors.grey[700]! : Colors.transparent;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
@@ -29,6 +30,14 @@ class ProfilePhoneField extends StatelessWidget {
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: borderColor),
           ),
           prefixIcon: Padding(
             padding: const EdgeInsets.all(12.0),
