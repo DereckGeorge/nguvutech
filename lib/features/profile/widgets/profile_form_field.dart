@@ -23,6 +23,7 @@ class ProfileFormField extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor =
         isDarkMode ? Colors.grey[850] : const Color(0xFFF5F5F8);
+    final borderColor = isDarkMode ? Colors.grey[700]! : Colors.transparent;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
@@ -42,6 +43,24 @@ class ProfileFormField extends StatelessWidget {
                     borderSide: BorderSide.none,
                   )
                   : const UnderlineInputBorder(),
+          enabledBorder:
+              background
+                  ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  )
+                  : const UnderlineInputBorder(),
+          focusedBorder:
+              background
+                  ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: borderColor),
+                  )
+                  : UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: isDarkMode ? Colors.grey[400]! : Colors.black54,
+                    ),
+                  ),
           suffixIcon: suffix,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
