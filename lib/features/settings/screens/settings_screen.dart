@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/utils/lottie_animations.dart';
+import '../../../core/utils/system_ui_helper.dart';
 import '../../../core/widgets/success_dialog.dart';
 import '../../../core/widgets/bottom_nav_bar.dart';
 
@@ -29,13 +29,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    // Set status bar to light (dark icons) for light theme
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Update system UI overlay based on current theme
+    SystemUIHelper.updateSystemUIOverlay(context);
   }
 
   @override
@@ -279,6 +279,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required Color? backgroundColor,
     String? Function(String?)? validator,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDarkMode ? Colors.grey[700]! : Colors.transparent;
+
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
@@ -291,6 +294,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: borderColor),
         ),
         suffixIcon: IconButton(
           icon: Icon(
