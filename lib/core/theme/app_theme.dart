@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF7C3AED);
-  static const Color secondaryColor = Color(0xFFD8B4FE);
+  static const Color primaryColor = Color(0xFFF85F47);
+  static const Color secondaryColor = Color(0xFFFFDAD0);
   static const Color errorColor = Color(0xFFDC2626);
   static const Color successColor = Color(0xFF16A34A);
   static const Color warningColor = Color(0xFFF59E0B);
@@ -15,6 +15,7 @@ class AppTheme {
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryColor,
       brightness: Brightness.light,
+      primary: primaryColor,
     ),
     appBarTheme: const AppBarTheme(
       elevation: 0,
@@ -79,7 +80,7 @@ class AppTheme {
     appBarTheme: const AppBarTheme(
       elevation: 0,
       centerTitle: true,
-      backgroundColor: Color(0xFF0D1117),
+      backgroundColor: Color(0xFF15202B),
       foregroundColor: Colors.white,
     ),
     cardTheme: CardTheme(
@@ -88,7 +89,7 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF1A1A2E),
+      fillColor: const Color(0xFF1E2732),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
@@ -124,7 +125,7 @@ class AppTheme {
       backgroundColor: primaryColor.withOpacity(0.2),
       labelStyle: const TextStyle(color: primaryColor),
     ),
-    scaffoldBackgroundColor: const Color(0xFF0D1117),
-    dialogBackgroundColor: const Color(0xFF1A1A2E),
+    scaffoldBackgroundColor: const Color(0xFF15202B),
+    dialogBackgroundColor: const Color(0xFF1E2732),
   );
 }
