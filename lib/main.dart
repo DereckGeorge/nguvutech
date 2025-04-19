@@ -9,18 +9,14 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'core/utils/constants.dart';
 import 'core/utils/router.dart';
+import 'core/utils/system_ui_helper.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set status bar to use dark icons on light background
-  SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle.dark.copyWith(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
+  // Initial setup for system UI (will be updated based on theme later)
+  SystemUIHelper.setOverlayStyleForBrightness(Brightness.light);
 
   try {
     // Initialize service locator
@@ -62,6 +58,15 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
+          // Apply correct theme for system UI on theme changes
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              final brightness =
+                  themeProvider.isDarkMode ? Brightness.dark : Brightness.light;
+              SystemUIHelper.setOverlayStyleForBrightness(brightness);
+            }
+          });
+
           return MaterialApp.router(
             title: AppConstants.appName,
             theme: AppTheme.lightTheme,
