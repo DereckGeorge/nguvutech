@@ -9,9 +9,13 @@ import 'profile_switch_item.dart';
 
 class ProfileMenuList extends StatelessWidget {
   final VoidCallback onEditProfileTap;
+  final VoidCallback onLogoutTap;
 
-  const ProfileMenuList({Key? key, required this.onEditProfileTap})
-    : super(key: key);
+  const ProfileMenuList({
+    Key? key,
+    required this.onEditProfileTap,
+    required this.onLogoutTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -90,12 +94,7 @@ class ProfileMenuList extends StatelessWidget {
           title: 'Logout',
           textColor: const Color(0xFFF85F47),
           iconColor: const Color(0xFFF85F47),
-          onTap: () async {
-            await Provider.of<AuthProvider>(context, listen: false).signOut();
-            if (context.mounted) {
-              context.go('/sign-in');
-            }
-          },
+          onTap: onLogoutTap,
         ),
       ],
     );
