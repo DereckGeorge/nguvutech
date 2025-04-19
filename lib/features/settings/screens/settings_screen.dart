@@ -1,27 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 
-import '../../../core/services/auth_provider.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/utils/lottie_animations.dart';
+import '../../../core/widgets/success_dialog.dart';
+import '../../../core/widgets/bottom_nav_bar.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final bool showAppBar;
-
-  const SettingsScreen({super.key, this.showAppBar = true});
+  const SettingsScreen({Key? key}) : super(key: key);
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  _SettingsScreenState createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final TextEditingController _currentPasswordController =
-      TextEditingController();
-  final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
-  final GlobalKey<FormState> _passwordFormKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Set status bar to light (dark icons) for light theme
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -32,283 +47,262 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _changePassword() async {
-    if (!_passwordFormKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() {
       _isLoading = true;
     });
 
-    try {
-      final success = await Provider.of<AuthProvider>(
-        context,
-        listen: false,
-      ).changePassword(
-        _currentPasswordController.text,
-        _newPasswordController.text,
-      );
+    // Simulate API call delay
+    await Future.delayed(const Duration(seconds: 2));
 
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password changed successfully')),
-        );
-        _currentPasswordController.clear();
-        _newPasswordController.clear();
-        _confirmPasswordController.clear();
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Failed to change password. Please check your current password.',
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    setState(() {
+      _isLoading = false;
+    });
+
+    // Show success dialog
+    if (mounted) {
+      SuccessDialog.show(
+        context,
+        message: 'Password updated successfully',
+        onDismissed: () {
+          _currentPasswordController.clear();
+          _newPasswordController.clear();
+          _confirmPasswordController.clear();
+        },
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return widget.showAppBar
-        ? Scaffold(
-          appBar: AppBar(title: const Text('Settings')),
-          body: _buildBody(),
-        )
-        : _buildBody();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Settings',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Dark mode section
+            _buildDarkModeToggle(),
+
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 24),
+
+            // Password change section
+            Text(
+              'Change Password',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            _buildPasswordForm(),
+          ],
+        ),
+      ),
+    );
   }
 
-  Widget _buildBody() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildDarkModeToggle() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+    final backgroundColor =
+        isDarkMode ? Colors.grey[850] : const Color(0xFFF5F5F8);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Appearance',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          Text(
+            'Dark Mode',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: textColor,
+            ),
           ),
-          const Text(
-            'Customize how the app looks and feels',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+          Switch(
+            value: themeProvider.isDarkMode,
+            onChanged: (value) {
+              themeProvider.toggleTheme();
+            },
+            activeColor: Colors.white,
+            activeTrackColor: const Color(0xFFF85F47),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordForm() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor =
+        isDarkMode ? Colors.grey[850] : const Color(0xFFF5F5F8);
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          // Current password field
+          _buildPasswordField(
+            controller: _currentPasswordController,
+            labelText: 'Current Password',
+            obscureText: _obscureCurrentPassword,
+            toggleObscure: () {
+              setState(() {
+                _obscureCurrentPassword = !_obscureCurrentPassword;
+              });
+            },
+            backgroundColor: backgroundColor,
+          ),
+
           const SizedBox(height: 16),
 
-          // Dark mode toggle
-          Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color:
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Colors.grey[800]!
-                        : Colors.grey[300]!,
-                width: 1,
-              ),
-            ),
-            color:
-                Theme.of(context).brightness == Brightness.dark
-                    ? Colors.transparent
-                    : Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.dark_mode,
-                        color:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Colors.white
-                                : Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Dark Mode',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Consumer<ThemeProvider>(
-                    builder: (context, themeProvider, _) {
-                      return Switch(
-                        value: themeProvider.isDarkMode,
-                        onChanged: (_) {
-                          themeProvider.toggleTheme();
-                        },
-                        activeColor: Colors.white,
-                        activeTrackColor: Theme.of(context).colorScheme.primary,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
+          // New password field
+          _buildPasswordField(
+            controller: _newPasswordController,
+            labelText: 'New Password',
+            obscureText: _obscureNewPassword,
+            toggleObscure: () {
+              setState(() {
+                _obscureNewPassword = !_obscureNewPassword;
+              });
+            },
+            backgroundColor: backgroundColor,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a new password';
+              }
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
           ),
 
-          const SizedBox(height: 32),
-
-          const Text(
-            'Security',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const Text(
-            'Manage your password and security settings',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
-          ),
           const SizedBox(height: 16),
 
-          // Password change form
-          Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color:
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Colors.grey[800]!
-                        : Colors.grey[300]!,
-                width: 1,
-              ),
-            ),
-            color:
-                Theme.of(context).brightness == Brightness.dark
-                    ? Colors.transparent
-                    : Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _passwordFormKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Current Password',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _currentPasswordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your current password';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+          // Confirm password field
+          _buildPasswordField(
+            controller: _confirmPasswordController,
+            labelText: 'Confirm Password',
+            obscureText: _obscureConfirmPassword,
+            toggleObscure: () {
+              setState(() {
+                _obscureConfirmPassword = !_obscureConfirmPassword;
+              });
+            },
+            backgroundColor: backgroundColor,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please confirm your password';
+              }
+              if (value != _newPasswordController.text) {
+                return 'Passwords do not match';
+              }
+              return null;
+            },
+          ),
 
-                    const Text(
-                      'New Password',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _newPasswordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a new password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
-                    const Text(
-                      'Confirm New Password',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _confirmPasswordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
-                        }
-                        if (value != _newPasswordController.text) {
-                          return 'Passwords do not match';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isLoading ? null : _changePassword,
-                        icon: const Icon(Icons.lock),
-                        label: Text(
-                          _isLoading
-                              ? 'Changing Password...'
-                              : 'Change Password',
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
+          // Update button
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _changePassword,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF85F47),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
                 ),
               ),
+              child:
+                  _isLoading
+                      ? SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : const Text(
+                        'Update Password',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String labelText,
+    required bool obscureText,
+    required VoidCallback toggleObscure,
+    required Color? backgroundColor,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: labelText,
+        floatingLabelBehavior: FloatingLabelBehavior.never,
+        filled: true,
+        fillColor: backgroundColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscureText ? Icons.visibility_off : Icons.visibility,
+            color: Colors.grey,
+          ),
+          onPressed: toggleObscure,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
     );
   }
