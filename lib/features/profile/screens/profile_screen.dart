@@ -1,20 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:lottie/lottie.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../core/models/user_model.dart';
 import '../../../core/services/auth_provider.dart';
-import '../../../core/utils/lottie_animations.dart';
-import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/custom_text_field.dart';
-import '../../../core/widgets/success_dialog.dart';
 import '../../../core/widgets/app_logo.dart';
-import '../../settings/screens/settings_screen.dart';
-import '../../../core/theme/theme_provider.dart';
+import '../../../core/utils/system_ui_helper.dart';
 import '../widgets/index.dart';
+import '../services/index.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -29,7 +21,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
-  bool _isEditing = false;
   bool _isLoading = false;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -38,14 +29,13 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _loadUserData();
+  }
 
-    // Set status bar to light (dark icons) for light theme
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-    );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Update system UI overlay based on current theme
+    SystemUIHelper.updateSystemUIOverlay(context);
   }
 
   @override
@@ -66,126 +56,15 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Future<void> _pickImage() async {
-    try {
-      final ImagePicker picker = ImagePicker();
-
-      // Show a bottom sheet with options
-      final source = await showModalBottomSheet<ImageSource>(
-        context: context,
-        builder: (BuildContext context) {
-          return SafeArea(
-            child: Wrap(
-              children: <Widget>[
-                ListTile(
-                  leading: const Icon(Icons.photo_library),
-                  title: const Text('Photo Library'),
-                  onTap: () => Navigator.pop(context, ImageSource.gallery),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.photo_camera),
-                  title: const Text('Camera'),
-                  onTap: () => Navigator.pop(context, ImageSource.camera),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-
-      // User canceled the selection
-      if (source == null) return;
-
-      // Pick the image
-      final XFile? image = await picker.pickImage(source: source);
-
-      if (image != null) {
-        setState(() {
-          _isLoading = true;
-        });
-
-        // Upload the image
-        final success = await Provider.of<AuthProvider>(
-          context,
-          listen: false,
-        ).updateAvatar(image.path);
-
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-
-          if (success) {
-            // Show success dialog with animation
-            SuccessDialog.show(
-              context,
-              message: 'Profile picture updated successfully',
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Failed to update profile picture')),
-            );
-          }
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error selecting image: $e')));
-      }
-    }
-  }
-
-  void _startEditing() {
-    setState(() {
-      _isEditing = true;
-    });
-  }
-
-  void _cancelEditing() {
-    setState(() {
-      _isEditing = false;
-      _loadUserData(); // Reset to original values
-    });
-  }
-
-  Future<void> _updateProfile() async {
-    if (!_formKey.currentState!.validate()) return;
-
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final success = await Provider.of<AuthProvider>(
-        context,
-        listen: false,
-      ).updateProfile(_nameController.text, _emailController.text);
+      final imagePath = await ImagePickerService.pickImage(context);
 
-      if (success && mounted) {
-        // Show success dialog with animation
-        SuccessDialog.show(
-          context,
-          message: 'Profile updated successfully',
-          onDismissed: () {
-            setState(() {
-              _isEditing = false;
-            });
-          },
-        );
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update profile')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (imagePath != null) {
+        await ProfileService.updateAvatar(context, imagePath: imagePath);
       }
     } finally {
       if (mounted) {
@@ -198,6 +77,13 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void _navigateToEditProfile() {
     context.push('/profile/edit');
+  }
+
+  void _handleLogout() async {
+    await ProfileService.signOut(context);
+    if (context.mounted) {
+      context.go('/sign-in');
+    }
   }
 
   @override
@@ -255,13 +141,20 @@ class _ProfileScreenState extends State<ProfileScreen>
                     onEditImage: _pickImage,
                   ),
                   const Divider(height: 32),
-                  ProfileMenuList(onEditProfileTap: _navigateToEditProfile),
+                  _buildProfileMenuList(),
                 ],
               ),
             ),
           );
         },
       ),
+    );
+  }
+
+  Widget _buildProfileMenuList() {
+    return ProfileMenuList(
+      onEditProfileTap: _navigateToEditProfile,
+      onLogoutTap: _handleLogout,
     );
   }
 }
