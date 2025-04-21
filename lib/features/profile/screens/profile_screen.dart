@@ -113,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         actions: [
           IconButton(
             icon: Image.asset(
-              'assets/icons/More Circle.png',
+              'assets/icons/language.png',
               width: 24,
               height: 24,
               color: isDarkMode ? Colors.white : Colors.black,
