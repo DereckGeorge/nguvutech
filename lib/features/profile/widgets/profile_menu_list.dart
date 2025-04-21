@@ -52,13 +52,17 @@ class ProfileMenuList extends StatelessWidget {
           iconAsset: 'assets/icons/Location.png',
           title: 'Address',
           textColor: textColor,
-          onTap: () {},
+          onTap: () {
+            context.push('/saved-addresses');
+          },
         ),
         ProfileMenuItem(
           iconAsset: 'assets/icons/Notification.png',
           title: 'Notification',
           textColor: textColor,
-          onTap: () {},
+          onTap: () {
+            context.push('/notification-settings');
+          },
         ),
         ProfileMenuItem(
           iconAsset: 'assets/icons/Shield Done.png',

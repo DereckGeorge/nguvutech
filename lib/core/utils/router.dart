@@ -7,6 +7,8 @@ import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/profile_edit_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/settings/screens/notification_screen.dart';
+import '../../features/settings/screens/saved_addresses_screen.dart';
 import '../services/auth_provider.dart';
 import '../services/service_locator.dart';
 import '../theme/theme_provider.dart';
@@ -110,6 +112,16 @@ class AppRouter {
             path: '/settings',
             name: 'settings',
             builder: (context, state) => const SettingsScreen(),
+          ),
+          GoRoute(
+            path: '/notification-settings',
+            name: 'notification-settings',
+            builder: (context, state) => const NotificationSettingsScreen(),
+          ),
+          GoRoute(
+            path: '/saved-addresses',
+            name: 'saved-addresses',
+            builder: (context, state) => const SavedAddressesScreen(),
           ),
         ],
       ),
