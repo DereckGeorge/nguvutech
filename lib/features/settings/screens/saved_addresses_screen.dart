@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:user_management/core/theme/app_theme.dart';
 
 class SavedAddressesScreen extends StatelessWidget {
   const SavedAddressesScreen({super.key});
@@ -10,7 +11,11 @@ class SavedAddressesScreen extends StatelessWidget {
     final textColor = isDarkMode ? Colors.white : Colors.black;
 
     final List<Map<String, String>> addresses = [
-      {"title": "Home", "subtitle": "Times Square NYC, Manhattan, 27", "label": "Default"},
+      {
+        "title": "Home",
+        "subtitle": "Times Square NYC, Manhattan, 27",
+        "label": "Default",
+      },
       {"title": "My Office", "subtitle": "5259 Blue Hill Park, PC 4827"},
       {"title": "My Apartment", "subtitle": "2333 Clyde Gallagher, PC 4462"},
       {"title": "Parent's House", "subtitle": "9652 Nersico Valley, PC 516"},
@@ -27,7 +32,7 @@ class SavedAddressesScreen extends StatelessWidget {
             color: textColor,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
         elevation: 0,
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -45,7 +50,10 @@ class SavedAddressesScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final address = addresses[index];
                 return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: isDarkMode ? Colors.grey[900] : Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -54,12 +62,16 @@ class SavedAddressesScreen extends StatelessWidget {
                         color: Colors.grey.withOpacity(0.15),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ],
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.location_on, color: Colors.red),
+                      Image.asset(
+                        'assets/icons/addresslocation.png',
+                        width: 40,
+                        height: 40,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -69,12 +81,18 @@ class SavedAddressesScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   address["title"] ?? '',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
                                 if (address.containsKey("label"))
                                   Container(
                                     margin: const EdgeInsets.only(left: 8),
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: Colors.orange.shade100,
                                       borderRadius: BorderRadius.circular(12),
@@ -93,13 +111,26 @@ class SavedAddressesScreen extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               address["subtitle"] ?? '',
-                              style: const TextStyle(fontSize: 13, color: Colors.grey),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
+                              ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Icon(Icons.edit, color: Colors.grey[600]),
+                      GestureDetector(
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Image.asset(
+                            'assets/icons/Edit.png',
+                            width: 30,
+                            height: 30,
+                            color: const Color(0xFFF85F47),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -116,7 +147,7 @@ class SavedAddressesScreen extends StatelessWidget {
                   // todo: screen for adding new addresses when we move to dynamic state
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
+                  backgroundColor: AppTheme.primaryColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
@@ -127,7 +158,7 @@ class SavedAddressesScreen extends StatelessWidget {
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );

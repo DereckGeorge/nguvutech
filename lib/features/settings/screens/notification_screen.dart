@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:user_management/core/theme/app_theme.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
-  State<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
+  State<NotificationSettingsScreen> createState() =>
+      _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState
+    extends State<NotificationSettingsScreen> {
   final Map<String, bool> settings = {
     "General Notification": true,
     "Sound": true,
@@ -26,6 +29,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDarkMode ? Colors.white : Colors.black;
+    final backgroundColor = isDarkMode ? Colors.grey[850] : Colors.white;
 
     return Scaffold(
       appBar: AppBar(
@@ -37,7 +41,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             color: textColor,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
@@ -48,23 +52,38 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: settings.length,
-        separatorBuilder: (_, __) => const Divider(height: 1, color: Colors.grey),
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
           final title = settings.keys.elementAt(index);
           final value = settings[title]!;
-          return SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-            title: Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: textColor,
+                  ),
+                ),
+                Switch(
+                  value: value,
+                  activeColor: Colors.white,
+                  activeTrackColor: AppTheme.primaryColor,
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.grey.shade300,
+                  onChanged: (newValue) {
+                    setState(() {
+                      settings[title] = newValue;
+                    });
+                  },
+                ),
+              ],
             ),
-            value: value,
-            activeColor: Colors.redAccent,
-            onChanged: (newValue) {
-              setState(() {
-                settings[title] = newValue;
-              });
-            },
           );
         },
       ),
