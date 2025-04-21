@@ -9,6 +9,8 @@ import '../../features/profile/screens/profile_edit_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/settings/screens/notification_screen.dart';
 import '../../features/settings/screens/saved_addresses_screen.dart';
+import '../../features/settings/screens/security_screen.dart';
+import '../../features/settings/screens/language_screen.dart';
 import '../services/auth_provider.dart';
 import '../services/service_locator.dart';
 import '../theme/theme_provider.dart';
@@ -122,6 +124,16 @@ class AppRouter {
             path: '/saved-addresses',
             name: 'saved-addresses',
             builder: (context, state) => const SavedAddressesScreen(),
+          ),
+          GoRoute(
+            path: '/security',
+            name: 'security',
+            builder: (context, state) => const SecurityScreen(),
+          ),
+          GoRoute(
+            path: '/language',
+            name: 'language',
+            builder: (context, state) => const LanguageScreen(),
           ),
         ],
       ),

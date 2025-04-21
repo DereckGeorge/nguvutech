@@ -68,7 +68,17 @@ class ProfileMenuList extends StatelessWidget {
           iconAsset: 'assets/icons/Shield Done.png',
           title: 'Security',
           textColor: textColor,
-          onTap: () {},
+          onTap: () {
+            context.push('/security');
+          },
+        ),
+        ProfileMenuItem(
+          iconAsset: 'assets/icons/language.png',
+          title: 'Language',
+          textColor: textColor,
+          onTap: () {
+            context.push('/language');
+          },
         ),
         Consumer<ThemeProvider>(
           builder: (context, themeProvider, _) {
