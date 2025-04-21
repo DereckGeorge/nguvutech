@@ -4,9 +4,14 @@ Welcome to the **Flutter Quest App**, a mini multi-day challenge designed to lev
 
 ---
 
-## 📽️ Demo
+## 📽️ Large Screen Demo
 
-![App Demo](assets/demo.gif)
+![App Demo](assets/largescreendemo.gif)
+
+---
+## 📽️ Small Screen Demo
+
+![App Demo](assets/smallscreendemo.gif)
 
 ---
 
